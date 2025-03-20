@@ -19,17 +19,13 @@ const AdminLogin = () => {
     const history = useHistory();
     const dispatch = useDispatch();
 
-    // Получение токена из состояния Redux
     const token = useSelector(state => state.auth.token);
     const theme = useSelector(state => state.theme.currentTheme);
 
     useEffect(() => {
         if (token) {
-            // Если токен существует, перенаправляем на /app/home
+            // Redirect to /app/home if token exists
             history.push('/app/home');
-        } else {
-            // Если токена нет, остаемся на /login
-            history.push('/login');
         }
     }, [token, history]);
 
@@ -54,7 +50,8 @@ const AdminLogin = () => {
         try {
             const user = await registerUser(email, password);
             console.log('User registered:', user);
-            // После регистрации можно автоматически входить в систему или перенаправлять пользователя
+            // Automatically log in the user after registration
+            handleLogin(e);
         } catch (error) {
             console.error('Error registering user:', error);
         }
@@ -70,32 +67,28 @@ const AdminLogin = () => {
             const isAdmin = idTokenResult.claims.admin || false;
             const token = idTokenResult.token;
 
-            // Сохранение токена в localStorage
             localStorage.setItem('auth_token', token);
-
-            // Обновление состояния пользователя в Redux
             dispatch({ type: SET_USER, payload: { user, isAdmin } });
 
             if (isAdmin) {
                 console.log('User is an admin');
-                history.push('/app/home');
             } else {
                 console.log('User is not an admin');
             }
+
+            // Redirect to /app/home after successful login
+            history.push('/app/home');
         } catch (error) {
             console.error('Error logging in:', error);
         }
     };
 
     const handleLogout = () => {
-        // Очистка токена из localStorage
         localStorage.removeItem('auth_token');
-
-        // Очистка состояния пользователя в Redux
         dispatch({ type: CLEAR_USER });
         dispatch({ type: SIGNOUT_SUCCESS });
 
-        // Перенаправление на страницу входа
+        // Redirect to login page after logout
         history.push('/login');
     };
 
@@ -120,7 +113,7 @@ const AdminLogin = () => {
                                         {token ? (
                                             <button onClick={handleLogout}>Logout</button>
                                         ) : (
-                                            <form onSubmit={handleLogin}>
+                                            <form onSubmit={isRegistering ? handleRegister : handleLogin}>
                                                 <input
                                                     type="email"
                                                     value={email}
