@@ -78,8 +78,10 @@ const auth = (state = initState, action) => {
 				token: action.token,
 			};
 		case SET_USER:
+			console.log('Setting user with token:', action.payload.token);
 			return {
 				...state,
+				token: action.payload.token,
 				user: action.payload.user,
 				isAdmin: action.payload.isAdmin,
 			};

@@ -1,8 +1,8 @@
 import React from 'react'
-import { connect } from 'react-redux'
+import {connect, useDispatch, useSelector} from 'react-redux'
 import { Radio, Switch, Button, message } from 'antd';
-import { 
-	toggleCollapsedNav, 
+import {
+	toggleCollapsedNav,
 	onNavTypeChange,
 	onNavStyleChange,
 	onTopNavColorChange,
@@ -13,7 +13,7 @@ import { CopyOutlined } from '@ant-design/icons';
 import ColorPicker from 'components/shared-components/ColorPicker';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import NavLanguage from './NavLanguage';
-import { 
+import {
 	SIDE_NAV_LIGHT,
 	NAV_TYPE_SIDE,
 	NAV_TYPE_TOP,
@@ -21,6 +21,8 @@ import {
 } from 'constants/ThemeConstant';
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import utils from 'utils/index';
+import {Link} from "react-router-dom";
+import {CLEAR_USER, SIGNOUT_SUCCESS} from "../../redux/constants/Auth";
 
 const colorOptions = [
 	'#3e82f7',
@@ -37,23 +39,23 @@ const ListOption = ({name, selector, disabled, vertical}) => (
 	</div>
 )
 
-export const ThemeConfigurator = ({ 
-	navType, 
-	sideNavTheme, 
+export const ThemeConfigurator = ({
+	navType,
+	sideNavTheme,
 	navCollapsed,
 	topNavColor,
 	headerNavColor,
 	locale,
 	currentTheme,
-	toggleCollapsedNav, 
-	onNavTypeChange, 
+	toggleCollapsedNav,
+	onNavTypeChange,
 	onNavStyleChange,
 	onTopNavColorChange,
 	onHeaderNavColorChange,
 	onSwitchTheme
 }) => {
 	const isNavTop = navType === NAV_TYPE_TOP? true : false
-	const isCollapse = navCollapsed 
+	const isCollapse = navCollapsed
 
 	const { switcher, themes } = useThemeSwitcher();
 
@@ -63,6 +65,20 @@ export const ThemeConfigurator = ({
 		onSwitchTheme(changedTheme)
     switcher({ theme: themes[changedTheme] });
   };
+
+
+	const dispatch = useDispatch();
+	const token = useSelector(state => state.auth.token);
+
+	const handleLogout = () => {
+		// Удаление токена из localStorage
+		localStorage.removeItem('auth_token');
+
+		// Очистка состояния пользователя в Redux
+		dispatch({ type: CLEAR_USER });
+		dispatch({ type: SIGNOUT_SUCCESS });
+	};
+
 
 	const ontopNavColorClick = (value) => {
 		onHeaderNavColorChange('')
@@ -91,33 +107,40 @@ export const ThemeConfigurator = ({
 
 	return (
 		<>
-			<div className="mb-5">
+			<div className="mb-2">
+				<div className="mb-3">
+					{token ? (
+						<button onClick={handleLogout}>Logout</button>
+					) : (
+						<Link to="/login" >Login</Link>
+					)}
+				</div>
 				<h4 className="mb-3 font-weight-bold">Navigation</h4>
 				{
 					isNavTop ?
-					<ListOption 
-						name="Top Nav Color:"
-						vertical
-						selector={
-							<ColorPicker color={topNavColor} colorChange={ontopNavColorClick}/>
-						}
-					/>
-					:
-					<ListOption 
-						name="Header Nav Color:"
-						vertical
-						selector={
-							<ColorPicker color={headerNavColor} colorChange={onHeaderNavColorClick}/>
-						}
-					/>
+						<ListOption
+							name="Top Nav Color:"
+							vertical
+							selector={
+								<ColorPicker color={topNavColor} colorChange={ontopNavColorClick}/>
+							}
+						/>
+						:
+						<ListOption
+							name="Header Nav Color:"
+							vertical
+							selector={
+								<ColorPicker color={headerNavColor} colorChange={onHeaderNavColorClick}/>
+							}
+						/>
 				}
-				
-				<ListOption 
+
+				<ListOption
 					name="Navigation Type:"
 					selector={
-						<Radio.Group 
-							size="small" 
-							onChange={e => onNavTypeClick(e.target.value)} 
+						<Radio.Group
+							size="small"
+							onChange={e => onNavTypeClick(e.target.value)}
 							value={navType}
 						>
 							<Radio.Button value={NAV_TYPE_SIDE}>Side</Radio.Button>
@@ -125,13 +148,13 @@ export const ThemeConfigurator = ({
 						</Radio.Group>
 					}
 				/>
-				<ListOption 
+				<ListOption
 					name="Side Nav Color:"
 					selector={
 						<Radio.Group
 							disabled={isNavTop}
-							size="small" 
-							onChange={e => onNavStyleChange(e.target.value)} 
+							size="small"
+							onChange={e => onNavStyleChange(e.target.value)}
 							value={sideNavTheme}
 						>
 							<Radio.Button value={SIDE_NAV_LIGHT}>Light</Radio.Button>
@@ -140,27 +163,27 @@ export const ThemeConfigurator = ({
 					}
 					disabled={isNavTop}
 				/>
-				<ListOption 
+				<ListOption
 					name="Side Nav Collapse:"
 					selector={
-						<Switch 
-							disabled={isNavTop} 
-							checked={isCollapse} 
-							onChange={() => toggleCollapsedNav(!navCollapsed)} 
+						<Switch
+							disabled={isNavTop}
+							checked={isCollapse}
+							onChange={() => toggleCollapsedNav(!navCollapsed)}
 						/>
 					}
 					disabled={isNavTop}
 				/>
-				<ListOption 
+				<ListOption
 					name="Dark Theme:"
 					selector={
-						<Switch checked={currentTheme === 'dark'} onChange={toggleTheme} />
+						<Switch checked={currentTheme === 'dark'} onChange={toggleTheme}/>
 					}
 				/>
 			</div>
 			<div className="mb-5">
 				<h4 className="mb-3 font-weight-bold">Locale</h4>
-				<ListOption 
+				<ListOption
 					name="Language:"
 					selector={
 						<NavLanguage configDisplay/>
@@ -169,7 +192,14 @@ export const ThemeConfigurator = ({
 			</div>
 			<div>
 				<CopyToClipboard
-					text={genCopySettingJson({ navType, sideNavTheme, navCollapsed, topNavColor, headerNavColor, locale, currentTheme})}
+					text={genCopySettingJson({
+						navType,
+						sideNavTheme,
+						navCollapsed,
+						topNavColor,
+						headerNavColor,
+						locale,
+						currentTheme})}
 					onCopy={() => message.success('Copy Success, please paste it to src/configs/AppConfig.js THEME_CONFIG variable.') }
 				>
 					<Button icon={<CopyOutlined /> } block>

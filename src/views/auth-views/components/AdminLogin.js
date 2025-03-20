@@ -22,6 +22,7 @@ const AdminLogin = () => {
     const token = useSelector(state => state.auth.token);
     const theme = useSelector(state => state.theme.currentTheme);
 
+    console.log('Dispatching SET_USER with token:', token);
     useEffect(() => {
         if (token) {
             // Redirect to /app/home if token exists
@@ -48,10 +49,20 @@ const AdminLogin = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const user = await registerUser(email, password);
-            console.log('User registered:', user);
-            // Automatically log in the user after registration
-            handleLogin(e);
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            const idTokenResult = await user.getIdTokenResult();
+            const token = idTokenResult.token;
+
+            // Сохранение токена в localStorage
+            localStorage.setItem('auth_token', token);
+
+            // Обновление состояния пользователя в Redux
+            dispatch({ type: SET_USER, payload: { user, isAdmin: false, token } });
+
+            // Перенаправление на /app/home после успешной регистрации
+            history.push('/app/home');
         } catch (error) {
             console.error('Error registering user:', error);
         }
@@ -67,14 +78,11 @@ const AdminLogin = () => {
             const isAdmin = idTokenResult.claims.admin || false;
             const token = idTokenResult.token;
 
+            // Save token in localStorage
             localStorage.setItem('auth_token', token);
-            dispatch({ type: SET_USER, payload: { user, isAdmin } });
 
-            if (isAdmin) {
-                console.log('User is an admin');
-            } else {
-                console.log('User is not an admin');
-            }
+            // Update user state in Redux
+            dispatch({ type: SET_USER, payload: { user, isAdmin, token } });
 
             // Redirect to /app/home after successful login
             history.push('/app/home');
