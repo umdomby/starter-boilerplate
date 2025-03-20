@@ -45,7 +45,7 @@
     "react-resizable": "^1.11.0",
     "react-resize-detector": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.1",
+    "react-scripts": "^5.0.1",
     "react-simple-maps": "^2.3.0",
     "react-sticky": "^6.0.3",
     "react-syntax-highlighter": "^15.4.3",
@@ -85,6 +85,9 @@
     ]
   },
   "devDependencies": {
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
     "autoprefixer": "^9.8.4",
     "gulp": "^4.0.2",
     "gulp-csso": "^4.0.1",
