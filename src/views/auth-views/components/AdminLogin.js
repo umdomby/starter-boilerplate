@@ -3,6 +3,14 @@ import { auth } from 'auth/FirebaseAuth';
 import { useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { SET_USER, CLEAR_USER, SIGNOUT_SUCCESS } from 'redux/constants/Auth';
+import { Card, Row, Col } from 'antd';
+
+const backgroundStyle = {
+    backgroundImage: 'url(/img/others/img-17.jpg)',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
+    height: '100vh'
+};
 
 const AdminLogin = () => {
     const [email, setEmail] = useState('');
@@ -13,6 +21,7 @@ const AdminLogin = () => {
 
     // Получение токена из состояния Redux
     const token = useSelector(state => state.auth.token);
+    const theme = useSelector(state => state.theme.currentTheme);
 
     useEffect(() => {
         if (token) {
@@ -91,33 +100,55 @@ const AdminLogin = () => {
     };
 
     return (
-        <div>
-            {token ? (
-                <button onClick={handleLogout}>Logout</button>
-            ) : (
-                <form onSubmit={isRegistering ? handleRegister : handleLogin}>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Email"
-                        required
-                    />
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password"
-                        required
-                    />
-                    <button type="submit">{isRegistering ? 'Register' : 'Login'}</button>
-                </form>
-            )}
-            {!token && (
-                <button onClick={toggleMode}>
-                    {isRegistering ? 'Already have an account? Login' : 'Need an account? Register'}
-                </button>
-            )}
+        <div style={backgroundStyle}>
+            <div className="container d-flex flex-column justify-content-center h-100">
+                <Row justify="center">
+                    <Col xs={20} sm={20} md={20} lg={7}>
+                        <Card>
+                            <div className="my-4">
+                                <div className="text-center">
+                                    <img className="img-fluid" src={`/img/${theme === 'light' ? 'logo.png' : 'logo-white.png'}`} alt="Logo" />
+                                    <p>
+                                        {isRegistering ? 'Already have an account?' : "Don't have an account yet?"}
+                                        <a href="#" onClick={toggleMode}>
+                                            {isRegistering ? ' Login' : ' Sign Up'}
+                                        </a>
+                                    </p>
+                                </div>
+                                <Row justify="center">
+                                    <Col xs={24} sm={24} md={20} lg={20}>
+                                        {token ? (
+                                            <button onClick={handleLogout}>Logout</button>
+                                        ) : (
+                                            <form onSubmit={handleLogin}>
+                                                <input
+                                                    type="email"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    placeholder="Email"
+                                                    required
+                                                    style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                />
+                                                <input
+                                                    type="password"
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    placeholder="Password"
+                                                    required
+                                                    style={{ width: '100%', padding: '10px', margin: '10px 0', borderRadius: '4px', border: '1px solid #ccc' }}
+                                                />
+                                                <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                                    {isRegistering ? 'Register' : 'Login'}
+                                                </button>
+                                            </form>
+                                        )}
+                                    </Col>
+                                </Row>
+                            </div>
+                        </Card>
+                    </Col>
+                </Row>
+            </div>
         </div>
     );
 };
